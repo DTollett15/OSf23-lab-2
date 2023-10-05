@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
+
+#define MAX_COUNT 30
+#define MAX_SLEEP 10
+
+void ChildProcess(void); /* child process prototype */
+void ParentProcess(void); /* parent process prototype */
+
+int main(void)
+{
+    pid_t pid1, pid2;
+    int status1, status2;
+
+    // Seed the random number generator
+    srand(time(NULL));
+
+    pid1 = fork();
+    if (pid1 == 0)
+    {
+        // First child process
+        ChildProcess();
+    }
+    else
+    {
+        pid2 = fork();
+        if (pid2 == 0)
+        {
+            // Second child process
+            ChildProcess();
+        }
+        else
+        {
+            // Parent process
+            waitpid(pid1, &status1, 0); // Wait for the first child to complete
+            waitpid(pid2, &status2, 0); // Wait for the second child to complete
+
+            // Print messages for both child processes completing
+            printf("Child Pid: %d has completed\n", pid1);
+            printf("Child Pid: %d has completed\n", pid2);
+        }
+    }
+
+    return 0;
+}
+
+void ChildProcess(void)
+{
+    int i;
+    pid_t pid = getpid();
+    pid_t ppid = getppid();
+
+    for (i = 1; i <= MAX_COUNT; i++)
+    {
+        printf("Child Pid: %d is going to sleep!\n", pid);
+        int sleep_time = rand() % (MAX_SLEEP + 1);
+        sleep(sleep_time);
+        printf("Child Pid: %d is awake!\nWhere is my Parent: %d?\n", pid, ppid);
+    }
+
+    // Child process termination
+    exit(0);
+}
