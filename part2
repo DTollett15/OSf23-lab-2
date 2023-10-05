@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+
+// Global variable to track whether the signal handler was invoked
+volatile int handler_invoked = 0;
+
+void handler(int signum)
+{ // Signal handler
+  printf("Hello World!\n");
+  handler_invoked = 1; // Set the flag to indicate handler invocation
+  alarm(1); // Reschedule the alarm for 1 second
+}
+
+int main(int argc, char * argv[])
+{
+  signal(SIGALRM, handler); // Register handler to handle SIGALRM
+  alarm(1); // Schedule a SIGALRM for 1 second
+
+  while (1)
+  {
+    if (handler_invoked)
+    {
+      printf("Turing was right!\n");
+      handler_invoked = 0; // Reset the flag
+    }
+  }
+
+  return 0; // Never reached
+}
